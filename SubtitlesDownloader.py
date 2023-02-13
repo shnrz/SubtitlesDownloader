@@ -14,10 +14,10 @@ table_data = [
 ]
 layout = [
    [
-      psg.Text(text='SEARCH PARAMETERS', pad=(0,20), font=('bold'))
+      psg.Text(text='SEARCH PARAMETERS', pad=(0,20), font=('Helvetica 16 bold'))
    ],
    [
-      psg.Text('TV Show:', size=(10,1)),
+      psg.Text('TV Show:', size=(8,1)),
       psg.InputText(size=(30,1),key='-NAME-'),
       psg.Text('Season:'),
       psg.InputText(size=(5,1),key='-SEASON-'),
@@ -25,9 +25,9 @@ layout = [
       psg.InputText(size=(5,1),key='-EPISODE-')
    ],
    [
-      psg.Text('TVDB Id:',size=(10,1)),
-      psg.InputText(size=(10,1),key='-ID-'),
-      psg.Text('Provider:'),
+      # psg.Text('TVDB Id:',size=(10,1)),
+      # psg.InputText(size=(10,1),key='-ID-'),
+      psg.Text('Provider:',size=8),
       psg.OptionMenu([
          'ALL',
          'OpenSubtitles',
@@ -44,14 +44,17 @@ layout = [
       psg.Text('_'*30, pad=(0,10))
    ],
    [
-      psg.Text('SEARCH RESULTS',pad=(0,20), font=('bold'))
+      psg.Text('SEARCH RESULTS',pad=(0,20), font=('Helvetica 16 bold'))
    ],
    [
-      psg.Table(headings=table_headers,values=table_data,display_row_numbers=True,key='-RESULTS TABLE-',auto_size_columns=True,justification='center')
+      psg.Table(headings=table_headers,values=table_data,display_row_numbers=True,key='-RESULTS TABLE-',auto_size_columns=True,justification='center',visible=False)
    ],
    [
       psg.Button('Download'),
       psg.Button('Close')
+   ],
+   [
+      psg.Text('',pad=(0,3))
    ]
 ]
 
@@ -67,18 +70,19 @@ def ValidateInputs(values):
       '-SEASON-',
       '-EPISODE-'
    ]
+   all_good = True
    for input in inputs_list:
-      if (values(input) == '' or values(input) == None):
+      if not values[input]:
          print('DEBUG ERROR: You did not enter a ' + input + '!')
-         return False
-   return True
+         all_good = False
+   return all_good
 
 def DoSearch(values):
-   if (len(values('-SEASON-')) < 2):
-      window['-SEASON-'].update('0' + values('-SEASON-'))
-   if (len(values('-EPISODE-')) < 2):
-      window['-EPISODE-'].update('0' + values('-EPISODE-'))
-   vid = sub.Video.fromname(values('-NAME-') + ' S' + values('-SEASON-') + 'E' + values('-EPISODE-'))
+   if (len(values['-SEASON-']) < 2):
+      window['-SEASON-'].update('0' + values['-SEASON-'])
+   if (len(values['-EPISODE-']) < 2):
+      window['-EPISODE-'].update('0' + values['-EPISODE-'])
+   vid = sub.Video.fromname(values['-NAME-'] + ' S' + values['-SEASON-'] + 'E' + values['-EPISODE-'])
    print(vid)
 
 while True:
@@ -87,6 +91,8 @@ while True:
       print('Search button was pressed')
       if ValidateInputs(values):
          DoSearch(values)
+      else:
+         print('Inputs are wrong')
    elif event == 'Download':
       print('Download button was pressed')
    elif event in (psg.WIN_CLOSED,'Close'):
