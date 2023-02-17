@@ -5,12 +5,9 @@ import babelfish as bf
 
 psg.theme('DarkGrey5')
 
-subtitles_results = []
-table_headers = ['Score','Provider','Title','Page link']
-table_data = []
 layout = [
    [
-      psg.Text(text='SEARCH PARAMETERS', pad=(0,20), font=('Helvetica 16 bold'))
+      psg.Text(text='SEARCH', pad=(0,20), font=('Helvetica 16 bold'))
    ],
    [
       psg.Text('TV Show:', size=(8,1)),
@@ -33,21 +30,46 @@ layout = [
          'Shooter',
          'TheSubDB',
          'TvSubtitles',
-      ], default_value='OpenSubtitles',key='-PROVIDER-'),
+      ], default_value='Podnapisi',key='-PROVIDER-'),
       psg.Button('Search')
    ],
    [
       psg.Text('_'*30, pad=(0,10))
    ],
    [
-      psg.Text('SEARCH RESULTS',pad=(0,20), font=('Helvetica 16 bold'))
+      psg.Text('RESULTS',pad=(0,20), font=('Helvetica 16 bold'))
    ],
    [
-      psg.Text('Fetching subtitles...',visible=False,key='-PROGRESS-',pad=(0,20)),
-      psg.Table(headings=table_headers,values=table_data,display_row_numbers=True,key='-RESULTS TABLE-',auto_size_columns=True,justification='center',visible=False)
+      psg.Text('Fetching subtitles...',visible=False,key='-PROGRESS-',pad=(0,10),justification='center',expand_x=True),
    ],
    [
-      psg.Button('Download'),
+      psg.Table(
+         headings=['Score','Provider','Title','Page link'],
+         values=[],
+         display_row_numbers=True,
+         key='-RESULTS TABLE-',
+         justification='left',
+         visible=False,
+         auto_size_columns=False,
+         col_widths=[5,10,25,45],
+         # starting_row_number=1,
+         # cols_justification=['c','c','l','l'],
+         expand_x=True,
+         enable_events=True
+      )
+   ],
+   [
+      psg.Text('_'*30, pad=(0,10))
+   ],
+   [
+      psg.Text('DOWNLOAD',pad=(0,20), font=('Helvetica 16 bold'))
+   ],
+   [
+      psg.In(key='-OUTPUT FOLDER-',size=(20,1)),
+      psg.FolderBrowse('Choose folder'),
+      psg.Button('Download')
+   ],
+   [
       psg.Button('Close')
    ],
    [
@@ -58,7 +80,15 @@ layout = [
 window = psg.Window(
    'Subtitles Downloader',
    layout,
-   use_custom_titlebar=True)
+   use_custom_titlebar=True,
+   resizable=True,
+   margins=(50,50),
+   # modal=True
+)
+window.finalize()
+# window.bring_to_front()
+# window.force_focus()
+window['-NAME-'].set_focus(force = False)
 
 def ValidateInputs(values):
    inputs_list = [
@@ -79,6 +109,8 @@ def GetSubScore(s):
 
 def GetSubsList(values):
    window['-PROGRESS-'].update(visible=True)
+   window['-RESULTS TABLE-'].update(visible=False)
+   global subs_list
    if (len(values['-SEASON-']) < 2):
       window['-SEASON-'].update('0' + values['-SEASON-'])
    if (len(values['-EPISODE-']) < 2):
@@ -90,17 +122,16 @@ def GetSubsList(values):
    return subs_list
 
 def UpdateResultsTable(subs_list):
-   window['-PROGRESS-'].update('Compiling results...')
+   window['-PROGRESS-'].update(value='Compiling results...')
    table_rows = []
    for s in subs_list:
       table_rows.append([
          str(GetSubScore(s)),
-         type(s),
+         s.provider_name,
          s.title,
          s.page_link
       ])
-   window['-PROGRESS-'].update(visible=False)
-   window['-PROGRESS-'].update('Fetching subtitles...')
+   window['-PROGRESS-'].update(visible=False,value='Fetching subtitles...')
    window['-RESULTS TABLE-'].update(values=table_rows, visible=True)
 
 while True:
@@ -121,8 +152,18 @@ while True:
       print('Updating results table...')
       window.perform_long_operation(lambda: UpdateResultsTable(sub_results), '-TABLE COMPILED-')
 
+   elif event == '-RESULTS TABLE-':
+      print(values['-RESULTS TABLE-'])
+      print(subs_list[values[event][0]])
+
    elif event == 'Download':
       print('Download button was pressed')
+      if values['-OUTPUT FOLDER-'] == None or values['-OUTPUT FOLDER-'] == '':
+         psg.popup_error('Please select a destination folder.')
+      elif len(values['-RESULTS TABLE-']) <= 0:
+         psg.popup_error('Please click a row in the results table.')
+      else:
+         print('This is where we\'d use core methods to download and save subtitles.')
 
    elif event in (psg.WIN_CLOSED,'Close'):
       break
