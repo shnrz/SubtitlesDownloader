@@ -2,6 +2,7 @@ import PySimpleGUI as psg
 import subliminal as sub
 import ProviderCredentials as cred
 import babelfish as bf
+import os.path
 
 psg.theme('DarkGrey5')
 
@@ -11,7 +12,7 @@ layout = [
    ],
    [
       psg.Text('TV Show:', size=(8,1)),
-      psg.InputText(size=(30,1),key='-NAME-'),
+      psg.InputText(size=(30,1),key='-NAME-',focus=True),
       psg.Text('Season:'),
       psg.InputText(size=(5,1),key='-SEASON-'),
       psg.Text('Episode:'),
@@ -65,7 +66,7 @@ layout = [
       psg.Text('DOWNLOAD',pad=(0,20), font=('Helvetica 16 bold'))
    ],
    [
-      psg.In(key='-OUTPUT FOLDER-',size=(20,1)),
+      psg.In(key='-OUTPUT FOLDER-',size=(20,1),default_text='C:\\Users\\Shnrz\\Desktop'),
       psg.FolderBrowse('Choose folder'),
       psg.Button('Download')
    ],
@@ -111,10 +112,10 @@ def GetSubsList(values):
    window['-PROGRESS-'].update(visible=True)
    window['-RESULTS TABLE-'].update(visible=False)
    global subs_list
-   if (len(values['-SEASON-']) < 2):
-      window['-SEASON-'].update('0' + values['-SEASON-'])
-   if (len(values['-EPISODE-']) < 2):
-      window['-EPISODE-'].update('0' + values['-EPISODE-'])
+   # if (len(values['-SEASON-']) < 2):
+   #    window['-SEASON-'].update('0' + values['-SEASON-'])
+   # if (len(values['-EPISODE-']) < 2):
+   #    window['-EPISODE-'].update('0' + values['-EPISODE-'])
    global vid
    vid = sub.Video.fromname(values['-NAME-'] + ' S' + values['-SEASON-'] + 'E' + values['-EPISODE-'])
    subs_list = sub.list_subtitles([vid],{bf.Language('eng')})[vid]
@@ -155,6 +156,8 @@ while True:
    elif event == '-RESULTS TABLE-':
       print(values['-RESULTS TABLE-'])
       print(subs_list[values[event][0]])
+      global selected_subs
+      selected_subs = subs_list[values[event][0]]
 
    elif event == 'Download':
       print('Download button was pressed')
@@ -163,7 +166,15 @@ while True:
       elif len(values['-RESULTS TABLE-']) <= 0:
          psg.popup_error('Please click a row in the results table.')
       else:
-         print('This is where we\'d use core methods to download and save subtitles.')
+         print('Downloading subs...')
+         sub.download_subtitles([selected_subs])
+         sub.save_subtitles(vid,[selected_subs],directory=values['-OUTPUT FOLDER-'])
+         subs_path = values['-OUTPUT FOLDER-'] + '\\' + values['-NAME-'] + ' S' + values['-SEASON-'] + 'E' + values['-EPISODE-'] + '.en.srt'
+         print(subs_path)
+         if os.path.isfile(subs_path):
+            psg.popup('Subtitles were successfully downloaded!')
+         else:
+            psg.popup_error('There was a problem downloading the subtitles.')
 
    elif event in (psg.WIN_CLOSED,'Close'):
       break
