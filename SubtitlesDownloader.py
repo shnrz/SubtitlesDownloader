@@ -10,26 +10,24 @@ layout = [
    ],
    [
       psg.Text('TV Show:', size=(8,1)),
-      psg.InputText(size=(30,1),key='-NAME-',focus=True),
-      psg.Text('Season:'),
-      psg.InputText(size=(5,1),key='-SEASON-'),
-      psg.Text('Episode:'),
-      psg.InputText(size=(5,1),key='-EPISODE-')
+      psg.InputText(size=(30,1),key='-NAME-',focus=True)
    ],
    [
-      # psg.Text('TVDB Id:',size=(10,1)),
-      # psg.InputText(size=(10,1),key='-ID-'),
-      psg.Text('Provider:',size=8),
-      psg.OptionMenu([
-         'ALL',
-         'OpenSubtitles',
-         'Addic7ed',
-         'LegendasTV',
-         'Podnapisi',
-         'Shooter',
-         'TheSubDB',
-         'TvSubtitles',
-      ], default_value='Podnapisi',key='-PROVIDER-'),
+      psg.Text('Season:', size=(8,1)),
+      psg.InputText(size=(5,1),key='-SEASON-'),
+      psg.Text('Episode:'),
+      psg.InputText(size=(5,1),key='-EPISODE-'),
+      # psg.Text('Provider:',size=8),
+      # psg.OptionMenu([
+      #    'ALL',
+      #    'OpenSubtitles',
+      #    'Addic7ed',
+      #    'LegendasTV',
+      #    'Podnapisi',
+      #    'Shooter',
+      #    'TheSubDB',
+      #    'TvSubtitles',
+      # ], default_value='OpenSubtitles',key='-PROVIDER-'),
       psg.Button('Search')
    ],
    [
@@ -51,8 +49,6 @@ layout = [
          visible=False,
          auto_size_columns=False,
          col_widths=[5,10,25,45],
-         # starting_row_number=1,
-         # cols_justification=['c','c','l','l'],
          expand_x=True,
          enable_events=True
       )
@@ -81,12 +77,9 @@ window = psg.Window(
    layout,
    use_custom_titlebar=True,
    resizable=True,
-   margins=(50,50),
-   # modal=True
+   margins=(50,50)
 )
 window.finalize()
-# window.bring_to_front()
-# window.force_focus()
 window['-NAME-'].set_focus(force = False)
 
 def ValidateInputs(values):
@@ -144,10 +137,12 @@ while True:
 
    elif event == 'Download':
       print('Download button was pressed')
+
       if values['-OUTPUT FOLDER-'] == None or values['-OUTPUT FOLDER-'] == '':
          psg.popup_error('Please select a destination folder.')
       elif len(values['-RESULTS TABLE-']) <= 0:
          psg.popup_error('Please click a row in the results table.')
+
       else:
          subs_path = values['-OUTPUT FOLDER-'] + '\\' + values['-NAME-'] + ' S' + values['-SEASON-'] + 'E' + values['-EPISODE-'] + '.en.srt'
          print('Downloading subs to: ' + subs_path + ' ...')
