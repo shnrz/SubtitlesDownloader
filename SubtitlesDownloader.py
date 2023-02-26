@@ -4,7 +4,29 @@ import os.path
 
 psg.theme('DarkGrey5')
 
-layout = [
+downloads_layout = [
+   [
+      psg.Text('DOWNLOAD',pad=(0,20), font=('Helvetica 16 bold'))
+   ],
+   [
+      psg.In(key='-OUTPUT FOLDER-',size=(20,1),default_text='C:\\Users\\Shnrz\\Desktop'),
+      psg.FolderBrowse('Choose folder'),
+      psg.Button('Download')
+   ]
+]
+
+previews_layout = [
+   [
+      psg.Text('PREVIEW',pad=(0,20), font=('Helvetica 16 bold'))
+   ],
+   [
+      psg.In(key='-PREVIEW FILEPATH-',size=(20,1),default_text='C:\\Users\\Shnrz\\Desktop'),
+      psg.FileBrowse('Choose file',file_types=(('STR Files','*.srt'),('ALL files','*.*'))),
+      psg.Button('Preview')
+   ]
+]
+
+main_layout = [
    [
       psg.Text(text='SEARCH', pad=(0,20), font=('Helvetica 16 bold'))
    ],
@@ -57,12 +79,8 @@ layout = [
       psg.Text('_'*30, pad=(0,10))
    ],
    [
-      psg.Text('DOWNLOAD',pad=(0,20), font=('Helvetica 16 bold'))
-   ],
-   [
-      psg.In(key='-OUTPUT FOLDER-',size=(20,1),default_text='C:\\Users\\Shnrz\\Desktop'),
-      psg.FolderBrowse('Choose folder'),
-      psg.Button('Download')
+      psg.Column(downloads_layout),
+      psg.Column(previews_layout)
    ],
    [
       psg.Button('Close')
@@ -74,7 +92,7 @@ layout = [
 
 window = psg.Window(
    'Subtitles Downloader',
-   layout,
+   main_layout,
    use_custom_titlebar=True,
    resizable=True,
    margins=(50,50)
@@ -148,9 +166,27 @@ while True:
          print('Downloading subs to: ' + subs_path + ' ...')
          sh.DownloadSubs(selected_subs, values['-OUTPUT FOLDER-'])
          if os.path.isfile(subs_path):
-            psg.popup('Subtitles were successfully downloaded!')
+            window['-PREVIEW FILEPATH-'].update(subs_path)
+            psg.popup('The subtitles were downloaded successfully to:\n' + subs_path)
          else:
             psg.popup_error('There was a problem downloading the subtitles.')
+
+   elif event == 'Preview':
+      if values['-PREVIEW FILEPATH-'] == None or values['-PREVIEW FILEPATH-'] == '':
+         psg.popup_error('Please select a subtitle file.')
+      elif not os.path.isfile(values['-PREVIEW FILEPATH-']):
+         psg.popup_error('Please select a valid subtitle file.')
+      else:
+         preview_path = str(values['-PREVIEW FILEPATH-']).replace('\n','/')
+         subs_content = ''
+         with open(preview_path,'r') as f:
+            for line in f.readlines():
+               subs_content = subs_content + line
+         psg.popup_scrolled(
+            subs_content,
+            title='Previewing subtitles',
+            size=(50,20)
+         )
 
    elif event in (psg.WIN_CLOSED,'Close'):
       break

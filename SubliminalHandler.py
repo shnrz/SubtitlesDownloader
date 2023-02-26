@@ -14,17 +14,3 @@ def GetSubsList(values):
 def DownloadSubs(subtitle,dest_path):
    sub.download_subtitles([subtitle])
    sub.save_subtitles(vid,[subtitle],directory=dest_path)
-
-def get_username(provider):
-   if provider in credentials:
-      prov_entry = credentials.get(provider)
-      return prov_entry.get('username')
-   else:
-      return None
-
-def get_password(provider):
-   if provider in credentials:
-      prov_entry = credentials.get(provider)
-      return prov_entry.get('password')
-   else:
-      return None
